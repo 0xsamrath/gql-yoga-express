@@ -455,38 +455,39 @@ export default {
 
 ```graphql
 query {
-	authors {
-		id
-		username
-		bio
-		posts {
-			id
-			title
-			content
-			authorId
-		}
-	}
+  authors {
+    id
+    username
+    bio
+    posts {
+      id
+      title
+      content
+      authorId
+    }
+  }
+  
   author(username: "username") {
-		id
-		username
-		bio
-		posts {
-			id
-			title
-			content
-			authorId
-		}
-	}
+    id
+    username
+    bio
+    posts {
+      id
+      title
+      content
+      authorId
+    }
+  }
 }
 ```
 
 ```graphql
 mutation {
-	createAuthor(username: "Quandale_Dingle", bio: "Quandale Dingle is the name of a Pennsauken high school football player featured in a series of goofy memes ") {
-		id
-		username
-		bio
-	}
+  createAuthor(username: "Quandale_Dingle", bio: "Quandale Dingle is the name of a Pennsauken high school football player featured in a series of goofy memes ") {
+    id
+    username
+    bio
+  }
 }
 ```
 
