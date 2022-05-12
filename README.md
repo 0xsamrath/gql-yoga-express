@@ -151,12 +151,12 @@ The declarative type definitions for queries, mutations and models are present i
 
 ```graphql
 {
-	comments (postId: "cl31yu62h0005gexo2hzx14du" ) {
+  comments (postId: "cl31yu62h0005gexo2hzx14du" ) {
     id
     content
     createdAt
     updatedAt
-	}
+  }
 }
 ```
 
@@ -180,11 +180,11 @@ mutation {
 
 ```graphql
 mutation {
-	updatePost(id: "cl31yu62h0005gexo2hzx14du", title:"Some title", content: "Some lengthy content") {
-		id
-		title
-		content
-   }
+  updatePost(id: "cl31yu62h0005gexo2hzx14du", title:"Some title", content: "Some lengthy content") {
+    id
+    title
+    content
+  }
 }
 ```
 
@@ -205,7 +205,7 @@ mutation {
 ```graphql
 mutation {
   deletePost(id: "cl31yu62h0005gexo2hzx14du") {
- 	 id
+    id
   }
 }
 ```
@@ -216,9 +216,9 @@ mutation {
 
 ```graphql
 mutation {
-	deleteComment(id: "cl31yu62h0005gexo2hzx14du") {
-		id
-	}
+  deleteComment(id: "cl31yu62h0005gexo2hzx14du") {
+    id
+  }
 }
 ```
 
