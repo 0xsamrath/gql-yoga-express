@@ -24,6 +24,7 @@ export const updatePost = async (
   const post = await context.prisma.post.update({
     where: { id: _args.id },
     data: { title: _args.title, content: _args.content },
+    include: { comments: true },
   });
   return post;
 };

@@ -12,8 +12,8 @@ This example shows how to implement a *GraphQL Yoga server with express** with t
 
 ### Table of contents
 
-  * **[Getting started](#getting-started)**
-  * **[Using the GQL API](#using-the-gql-api)**
+* **[Getting started](#getting-started)**
+* **[Using the GQL API](#using-the-gql-api)**
     + **[Queries](#queries)**
       - **[Get all posts and comments](#get-all-posts-and-comments)**
       - **[Get all comments and their corresponding posts](#get-all-comments-and-their-corresponding-posts)**
@@ -25,6 +25,10 @@ This example shows how to implement a *GraphQL Yoga server with express** with t
       - **[Create a comment](#create-a-comment)**
       - **[Delete post](#delete-post)**
       - **[Delete comment](#delete-comment)**
+* **[Scaling your application further](#scaling-your-application-further)**
+  - **[1. Update prisma](#1-update-prisma)**
+  - **[2. Update application code](#2-update-application-code)**
+  - **[3. Testing our queries and mutations](#3-testing-our-queries-and-mutations)**
 
 
 
@@ -69,7 +73,7 @@ This example shows how to implement a *GraphQL Yoga server with express** with t
 
 ## Using the GQL API
 
-The declarative type definitions for queries, mutations and models are present in `./src/definition.ts`. Here are some examples of queries and mutations that are already present in our application
+The declarative type definitions for queries, mutations and models are present in `./src/definitions.ts`. Here are some examples of queries and mutations that are already present in our application
 
 ### Queries
 
@@ -230,12 +234,14 @@ If we wanted to add an author element to all posts, this is how we would do it
 
 #### 1. Update prisma
 
+We're going to add the author model into our prisma schema and relate it to the post model, one author can have multiple posts but one post can have only one author
+
 ```diff
 // ./prisma/schema.prisma
 +model Author {
-+  id       Int     @default(autoincrement()) @id
++  id       String   @default(cuid()) @id
 +  bio      String?
-+  username String?
++  username String
 +  posts    Post[]
 +}
 
@@ -246,5 +252,244 @@ model Post {
   comments  Comment[]
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
++  author    Author   @relation(fields: [authorId], references: [id])
++  authorId  String
 }
 ```
+
+Let's add these changes to our database
+
+```shell
+npx prisma migrate dev --name add-author
+```
+
+#### 2. Update application code
+
+First, we'll need to update our typeDefs in `src/definitions.ts`
+
+``` diff
+// src/definitions.ts
+
+export const typeDefs = `
+  scalar Date
+  
++  type Author {
++  	id: String
++		bio: String!
++   username: String
++ 	posts: Post[]
++  }
+
+  type Post {
+    id: String
+    title: String
+    content: String
+    comments: [Comment]
+    createdAt: Date
+    updatedAt: Date
++    author: Author
++    authorId: String
+  }
+
+  type Comment {
+    id: String
+    content: String
+    post: Post
+    postId: String
+    createdAt: Date
+    updatedAt: Date
+  }
+
+  type Query {
++    authors(take: Int, skip: Int): [Author]
++    author(username: String!): Author
+    posts(take: Int, skip: Int): [Post]
+    comments(take: Int, skip: Int, postId: String): [Comment]
+    post(id: String!): Post
+    comment(id: String!): Comment
+  }
+
+  type Mutation {
++  	createAuthor(username: String!, bio: String): Author
+    createPost(title: String!, content: String!): Post
+    updatePost(id: String!, title: String, content: String): Post
+    deletePost(id: String!): Post
+    createComment(content: String!, postId: String!): Comment
+    deleteComment(id: String!): Comment
+  }
+`;
+```
+
+Next we'll need to update our queries
+
+```diff
+// src/queries.ts
+import { ctx } from "./context";
+
++export const authors = async (
++  _: any,
++  _args: { take?: number; skip?: number },
++  context: typeof ctx
++) => {
++  return context.prisma.author.findMany({
++    take: _args?.take,
++    skip: _args?.skip,
++    include: {
++      posts: true,
++    },
++  });
++};
++
++export const author = async (_: any, _args: { id: string }, context: typeof ctx) => {
++  return context.prisma.author.findFirst({
++    where: {
++      id: _args.id,
++    },
++    include: {
++      posts: true,
++    },
++  });
++};
++
+export const posts = async (
+  _: any,
+  _args: { take?: number; skip?: number },
+  context: typeof ctx
+) => {
+  return context.prisma.post.findMany({
+    take: _args?.take,
+    skip: _args?.skip,
+    include: {
+      comments: true,
++      author: true,
+    },
+  });
+};
+
+export const post = async (_: any, _args: { id: string }, context: typeof ctx) => {
+  return context.prisma.post.findFirst({
+    where: {
+      id: _args.id,
+    },
+    include: {
+      comments: true,
++      author: true,
+    },
+  });
+};
+
+export const comments = async (
+  _: any,
+  _args: { take?: number; skip?: number; postId?: string },
+  context: typeof ctx
+) => {
+  return context.prisma.comment.findMany({
+    take: _args.take,
+    skip: _args.skip,
+    where: {
+      postId: _args.postId
+    },
+    include: {
+      post: true,
+    },
+  });
+};
+
+export const comment = async (
+  _: any,
+  _args: { id: string },
+  context: typeof ctx
+) => {
+  return context.prisma.comment.findFirst({
+    where: {
+      id: _args.id,
+    },
+    include: {
+      post: true,
+    },
+  });
+};
+
+export default {
++  authors,
++  author,
+  posts,
+  post,
+  comments,
+  comment,
+};
+```
+
+Next, our mutations
+
+```diff
+import { ctx } from "./context";
+
++export const createAuthor = async (
++  _: any,
++  _args: { username: string; bio?: string },
++  context: typeof ctx
++) => {
++  const author = await context.prisma.author.create({
++    data: { ..._args },
++  });
++
++  return author;
++};
++
+.....
+
+export default {
+	createAuthor,
+  createPost,
+  updatePost,
+  deletePost,
+  createComment,
+  deleteComment,
+};
+```
+
+
+
+#### 3. Testing our queries and mutations
+
+```graphql
+query {
+	authors {
+		id
+		username
+		bio
+		posts {
+			id
+			title
+			content
+			authorId
+		}
+	}
+  author(username: "username") {
+		id
+		username
+		bio
+		posts {
+			id
+			title
+			content
+			authorId
+		}
+	}
+}
+```
+
+```graphql
+mutation {
+	createAuthor(username: "Quandale_Dingle", bio: "Quandale Dingle is the name of a Pennsauken high school football player featured in a series of goofy memes ") {
+		id
+		username
+		bio
+	}
+}
+```
+
+
+
+**And that's all! Congratulations for getting this far**
