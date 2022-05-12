@@ -90,7 +90,7 @@ The declarative type definitions for queries, mutations and models are present i
     comments {
       id
       content
-			createdAt
+      createdAt
       updatedAt
       postId
     }
@@ -151,12 +151,12 @@ The declarative type definitions for queries, mutations and models are present i
 
 ```graphql
 {
-  comments (postId: "cl31yu62h0005gexo2hzx14du" ) {
-		id
+	comments (postId: "cl31yu62h0005gexo2hzx14du" ) {
+    id
     content
-   	createdAt
-		updatedAt
-  }
+    createdAt
+    updatedAt
+	}
 }
 ```
 
@@ -168,11 +168,11 @@ The declarative type definitions for queries, mutations and models are present i
 
 ```graphql
 mutation {
-	createPost(title:"Some title", content: "Some lengthy content") {
-		id
-		updatedAt
-		createdAt
-	}
+  createPost(title:"Some title", content: "Some lengthy content") {
+    id
+    updatedAt
+    createdAt
+  }
 }
 ```
 
@@ -192,11 +192,11 @@ mutation {
 
 ```graphql
 mutation {
-	createComment(content: "Some lengthy content") {
-		id
-		updatedAt
-		createdAt
-	}
+  createComment(content: "Some lengthy content") {
+    id
+    updatedAt
+    createdAt
+  }
 }
 ```
 
@@ -204,9 +204,9 @@ mutation {
 
 ```graphql
 mutation {
-	deletePost(id: "cl31yu62h0005gexo2hzx14du") {
-		id
-   }
+  deletePost(id: "cl31yu62h0005gexo2hzx14du") {
+ 	 id
+  }
 }
 ```
 
@@ -218,7 +218,7 @@ mutation {
 mutation {
 	deleteComment(id: "cl31yu62h0005gexo2hzx14du") {
 		id
-   }
+	}
 }
 ```
 
