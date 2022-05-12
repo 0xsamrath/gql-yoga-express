@@ -340,10 +340,10 @@ import { ctx } from "./context";
 +  });
 +};
 +
-+export const author = async (_: any, _args: { id: string }, context: typeof ctx) => {
++export const author = async (_: any, _args: { username: string }, context: typeof ctx) => {
 +  return context.prisma.author.findFirst({
 +    where: {
-+      id: _args.id,
++      username: _args.username,
 +    },
 +    include: {
 +      posts: true,
@@ -423,6 +423,7 @@ export default {
 Next, our mutations
 
 ```diff
+// src/mutations.ts
 import { ctx } from "./context";
 
 +export const createAuthor = async (
